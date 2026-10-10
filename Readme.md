@@ -1,4 +1,4 @@
-```markdown
+
 # Mirror88
 
 Live phone screen mirror with mouse control — right in your browser.  
@@ -147,4 +147,3 @@ Credits
 © 2026 mohamed005cheikh@gmail.com — by MC88.
 Free to use and modify for personal use.
 
-```
