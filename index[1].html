@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mirror88</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg: #0a0a0d;
+        --bg-2: #14141a;
+        --panel: #17171e;
+        --panel-border: #26262f;
+        --card: #1e1e26;
+        --text: #ececf0;
+        --text-mid: #9a9aa6;
+        --text-dim: #5c5c68;
+        --accent: #7b9fdb;
+        --accent-bright: #a8c3ea;
+        --accent-glow: rgba(123, 159, 219, 0.3);
+        --success: #6fcf97;
+        --danger: #eb5757;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+        height: 100%;
+        background: radial-gradient(ellipse at center, var(--bg-2) 0%, var(--bg) 70%);
+        color: var(--text);
+        font-family: 'Inter', -apple-system, sans-serif;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .shell { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
+
+    header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 26px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .brand {
+        display: flex; align-items: center; gap: 12px;
+        font-family: 'Sora', sans-serif; font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    .brand-mark {
+        width: 30px; height: 30px; border-radius: 8px;
+        background: var(--accent); color: var(--bg);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; font-weight: 800;
+        box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .brand-text span { color: var(--accent); }
+
+    .status {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem; letter-spacing: 0.12em;
+        padding: 6px 13px; border-radius: 999px;
+        background: rgba(111, 207, 151, 0.12);
+        border: 1px solid rgba(111, 207, 151, 0.35);
+        color: var(--success); text-transform: uppercase;
+    }
+
+    .status.off {
+        background: rgba(235, 87, 87, 0.12);
+        border-color: rgba(235, 87, 87, 0.35);
+        color: var(--danger);
+    }
+
+    .status-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: currentColor; box-shadow: 0 0 8px currentColor;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+    }
+
+    main { display: grid; grid-template-columns: 1fr 260px; overflow: hidden; }
+
+    .screen-area {
+        display: flex; align-items: center; justify-content: center;
+        padding: 24px; overflow: hidden; position: relative;
+    }
+
+    .phone-frame {
+        position: relative; border-radius: 26px; padding: 10px;
+        background: var(--card); border: 1px solid var(--panel-border);
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.6), 0 0 40px var(--accent-glow);
+        max-width: 100%; max-height: 100%;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    #phoneStream {
+        display: block; border-radius: 18px;
+        max-width: 100%; max-height: calc(100vh - 180px);
+        width: auto; height: auto; background: #000;
+        object-fit: contain;
+        cursor: crosshair;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+
+    #phoneStream:active { cursor: grabbing; }
+
+    .waiting {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 14px;
+        color: var(--text-dim);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem; letter-spacing: 0.2em;
+        text-transform: uppercase; pointer-events: none;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+
+    .waiting.show { opacity: 1; }
+
+    .waiting-dot {
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 2px solid var(--panel-border);
+        border-top-color: var(--accent);
+        animation: spin 1.2s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    aside {
+        background: var(--panel);
+        border-left: 1px solid var(--panel-border);
+        padding: 22px 20px;
+        display: flex; flex-direction: column;
+        gap: 18px; overflow-y: auto;
+    }
+
+    .section-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem; letter-spacing: 0.22em;
+        color: var(--text-dim); text-transform: uppercase;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .readout {
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem; padding: 6px 0;
+    }
+
+    .readout .key { color: var(--text-dim); }
+    .readout .val { color: var(--accent-bright); font-weight: 500; }
+
+    .battery-bar {
+        height: 4px; background: var(--card);
+        border-radius: 2px; overflow: hidden; margin-top: 4px;
+    }
+
+    .battery-fill {
+        height: 100%; background: var(--success);
+        border-radius: 2px; transition: width 0.4s ease;
+    }
+
+    .battery-fill.low { background: var(--danger); }
+
+    .keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .keypad button {
+        background: var(--card);
+        border: 1px solid var(--panel-border);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 9px 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .keypad button:hover {
+        background: var(--accent);
+        color: var(--bg);
+    }
+
+    .keypad button:active { transform: scale(0.95); }
+
+    footer {
+        padding: 12px 26px;
+        background: var(--panel);
+        border-top: 1px solid var(--panel-border);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem;
+        color: var(--text-dim);
+        text-align: center;
+    }
+
+    footer span { margin: 0 6px; opacity: 0.5; }
+
+    @media (max-width: 900px) {
+        main { grid-template-columns: 1fr; }
+        aside { display: none; }
+        #phoneStream { max-height: calc(100vh - 150px); }
+    }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+    <header>
+        <div class="brand">
+            <div class="brand-mark">M</div>
+            <div class="brand-text">Mirror<span>88</span></div>
+        </div>
+        <div class="status" id="statusBadge">
+            <div class="status-dot"></div>
+            <span id="statusText">Connecting</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="screen-area">
+            <div class="phone-frame">
+                <img id="phoneStream" src="/stream" alt="Phone screen"
+                     draggable="false" />
+                <div class="waiting" id="waiting">
+                    <div class="waiting-dot"></div>
+                    <div>Waiting for device…</div>
+                </div>
+            </div>
+        </div>
+
+        <aside>
+            <div>
+                <div class="section-title">Device</div>
+                <div class="readout">
+                    <span class="key">MODEL</span>
+                    <span class="val" id="valModel">—</span>
+                </div>
+                <div class="readout">
+                    <span class="key">SERIAL</span>
+                    <span class="val" id="valSerial">—</span>
+                </div>
+                <div class="readout">
+                    <span class="key">BATTERY</span>
+                    <span class="val" id="valBattery">—</span>
+                </div>
+                <div class="battery-bar">
+                    <div class="battery-fill" id="batteryFill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Stream</div>
+                <div class="readout">
+                    <span class="key">MODE</span>
+                    <span class="val">MJPEG</span>
+                </div>
+                <div class="readout">
+                    <span class="key">FPS</span>
+                    <span class="val" id="valFps">—</span>
+                </div>
+                <div class="readout">
+                    <span class="key">RESOLUTION</span>
+                    <span class="val" id="valRes">—</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Quick keys</div>
+                <div class="keypad">
+                    <button data-key="3">HOME</button>
+                    <button data-key="4">BACK</button>
+                    <button data-key="187">RECENTS</button>
+                    <button data-key="26">POWER</button>
+                    <button data-key="24">VOL +</button>
+                    <button data-key="25">VOL −</button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        Copyright © 2026 <span>·</span> mohamed005cheikh@gmail.com <span>·</span> by MC88
+    </footer>
+
+</div>
+
+<script>
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText  = document.getElementById('statusText');
+    const waiting     = document.getElementById('waiting');
+    const valModel    = document.getElementById('valModel');
+    const valSerial   = document.getElementById('valSerial');
+    const valBattery  = document.getElementById('valBattery');
+    const batteryFill = document.getElementById('batteryFill');
+    const valFps      = document.getElementById('valFps');
+    const valRes      = document.getElementById('valRes');
+    const streamImg   = document.getElementById('phoneStream');
+
+    /* --------- FPS meter --------- */
+    let frames = 0;
+    let lastFpsTime = performance.now();
+    streamImg.addEventListener('load', () => { frames++; });
+    setInterval(() => {
+        const now = performance.now();
+        const dt = (now - lastFpsTime) / 1000;
+        const fps = dt > 0 ? (frames / dt) : 0;
+        valFps.textContent = fps.toFixed(1);
+        frames = 0;
+        lastFpsTime = now;
+    }, 1500);
+
+    /* --------- Status polling --------- */
+    async function pollStatus() {
+        try {
+            const res = await fetch('/status', { signal: AbortSignal.timeout(2000) });
+            const data = await res.json();
+
+            if (data.connected) {
+                statusBadge.classList.remove('off');
+                statusText.textContent = 'Connected';
+                waiting.classList.remove('show');
+                valModel.textContent = data.model || '—';
+                valSerial.textContent = data.serial || '—';
+                valBattery.textContent = (data.battery || 0) + '%';
+                batteryFill.style.width = (data.battery || 0) + '%';
+                batteryFill.classList.toggle('low', (data.battery || 0) < 20);
+                valRes.textContent = (data.phone_w || '—') + ' × ' + (data.phone_h || '—');
+            } else {
+                statusBadge.classList.add('off');
+                statusText.textContent = 'No device';
+                waiting.classList.add('show');
+                valModel.textContent = '—';
+                valSerial.textContent = '—';
+                valBattery.textContent = '—';
+                batteryFill.style.width = '0%';
+                valFps.textContent = '—';
+                valRes.textContent = '—';
+            }
+        } catch (_) {
+            statusBadge.classList.add('off');
+            statusText.textContent = 'Server off';
+            waiting.classList.add('show');
+        }
+    }
+    pollStatus();
+    setInterval(pollStatus, 2000);
+
+    /* --------- Touch / click control on the phone image --------- */
+    let pressStart = null;
+    let pressMoved = false;
+
+    function imageCoords(e) {
+        const rect = streamImg.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        return {
+            x,
+            y,
+            w: rect.width,
+            h: rect.height,
+        };
+    }
+
+    function sendControl(payload) {
+        fetch('/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        }).catch(() => {});
+    }
+
+    streamImg.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        const c = imageCoords(e);
+        pressStart = { x: c.x, y: c.y, w: c.w, h: c.h, t: performance.now() };
+        pressMoved = false;
+    });
+
+    streamImg.addEventListener('mousemove', (e) => {
+        if (!pressStart) return;
+        const c = imageCoords(e);
+        const dx = c.x - pressStart.x;
+        const dy = c.y - pressStart.y;
+        if (Math.hypot(dx, dy) > 8) {
+            pressMoved = true;
+        }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (!pressStart) return;
+        const c = imageCoords(e);
+        const duration = performance.now() - pressStart.t;
+
+        if (pressMoved) {
+            // Swipe
+            sendControl({
+                action: 'swipe',
+                x1: pressStart.x,
+                y1: pressStart.y,
+                x2: c.x,
+                y2: c.y,
+                disp_w: pressStart.w,
+                disp_h: pressStart.h,
+                duration: Math.min(1200, Math.max(80, Math.round(duration))),
+            });
+        } else {
+            // Tap
+            sendControl({
+                action: 'tap',
+                x: c.x,
+                y: c.y,
+                disp_w: pressStart.w,
+                disp_h: pressStart.h,
+            });
+        }
+
+        pressStart = null;
+        pressMoved = false;
+    });
+
+    /* --------- Quick keys --------- */
+    document.querySelectorAll('.keypad button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            sendControl({ action: 'key', key: btn.dataset.key });
+        });
+    });
+</script>
+
+</body>
+</html>
